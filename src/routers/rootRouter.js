@@ -1,8 +1,9 @@
 import express from 'express';
-import { join } from '../controllers/userControllers';
+import { join,logout } from '../controllers/userControllers';
 
 const rootRouter = express.Router();
 
 rootRouter.post('/join', join);
+rootRouter.post('/logout', logout);
 
 export default rootRouter;

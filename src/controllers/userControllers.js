@@ -21,3 +21,12 @@ export const join = async (req, res) => {
     return res.status(400).json({ message: '서버 오류' });
   }
 };
+
+export const logout = async(req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: '로그아웃 실패' });
+    }
+    res.status(200).json({ message: '로그아웃 성공!' });
+  });
+};
