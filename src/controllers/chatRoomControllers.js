@@ -24,3 +24,21 @@ export const createRoom = async (req, res) => {
   }
 
 };
+
+export const deleteRoom = async (req,res) => {
+  try {
+    const { roomId } = req.params;
+
+    const room = await Chatroom.findById(roomId);
+    if (!room) {
+      return res.status(404).json({message:"❌ 채팅방을 찾을 수 없습니다." });
+    }
+
+    await Chatroom.findByIdAndDelete(roomId);
+
+    return res.status(200).json({message: "✅ 채팅방 삭제 완료!" });
+  } catch (error) {
+    console.error("🚨 채팅방 삭제 에러:", error);
+    return res.status(500).json({ message: "❌ 채팅방 삭제 실패", error: error.message });
+  }
+};
