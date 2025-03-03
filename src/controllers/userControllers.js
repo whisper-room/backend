@@ -3,6 +3,9 @@ import bcrypt from 'bcrypt';
 
 export const join = async (req, res) => {
   const { username, email, password } = req.body;
+  const profile = req.file ? req.file.path : '';
+
+  console.log('Uploaded file path:', profile);
 
   const exists = await User.exists({ $or: [{ username }, { email }] });
   if (exists) {
@@ -13,6 +16,7 @@ export const join = async (req, res) => {
       username,
       email,
       password,
+      profile,
     });
     return res.status(200).json({ message: '회원가입 성공!' });
   } catch (error) {
