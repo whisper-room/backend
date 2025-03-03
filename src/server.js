@@ -15,8 +15,8 @@ app.use(
   })
 );
 app.use(cors());
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ extended: true }));
+app.use('/uploads', express.static('uploads'));
 app.use('/', rootRouter);
 export default app;
