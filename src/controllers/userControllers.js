@@ -24,10 +24,10 @@ export const join = async (req, res) => {
   }
 };
 export const login = async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({ username });
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
   if (!user) {
-    return res.status(400).json({ message: 'username이 존재하지 않습니다.' });
+    return res.status(400).json({ message: 'email이 존재하지 않습니다.' });
   }
   const ok = await bcrypt.compare(password, user.password);
   if (!ok) {
