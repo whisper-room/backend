@@ -6,22 +6,20 @@ import MongoStore from 'connect-mongo';
 import rootRouter from './routers/rootRouter.js';
 
 const app = express();
-
+app.use(
+  cors({
+    origin: 'http://localhost:5000', // 프론트엔드 주소
+    credentials: true, // 세션 쿠키를 허용
+  })
+);
 app.use(
   session({
     secret: 'myKey',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.DB_URL }),
   })
 );
-
-app.get('/add-one', (req, res, next) => {
-  req.session.potato += 1;
-  console.log(req.session.user);
-  return res.send(`${req.session.id}\n${req.session.potato}`);
-});
-app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ extended: true }));
 app.use('/uploads', express.static('uploads'));
