@@ -33,7 +33,15 @@ export const login = async (req, res) => {
   if (!ok) {
     return res.status(400).json({ message: '비밀번호가 틀립니다.' });
   }
+  req.session.loggedIn = true;
+  req.session.user = user;
   return res.status(200).json({ message: '로그인 성공!' });
+};
+export const session = (req, res) => {
+  if (req.session.user) {
+    return res.status(200).json({ loggedIn: true, user: req.session.user });
+  }
+  return res.status(200).json({ loggedIn: false });
 };
 
 export const logout = async (req, res) => {
