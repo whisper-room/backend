@@ -4,11 +4,9 @@ import session from 'express-session';
 import cors from 'cors';
 import MongoStore from 'connect-mongo';
 import rootRouter from './routers/rootRouter.js';
-<<<<<<< HEAD
 import chatRoomRouter from './routers/chatRoomRouter.js';
-=======
 import userRouter from './routers/userRouter.js';
->>>>>>> 6d6b459074a906b054656ecc0882c9196ea7f9fc
+
 
 const app = express();
 app.use(
@@ -29,9 +27,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 app.use('/', rootRouter);
-<<<<<<< HEAD
 app.use('/chatroom', chatRoomRouter);
-=======
 app.use('/user', userRouter);
->>>>>>> 6d6b459074a906b054656ecc0882c9196ea7f9fc
 export default app;
