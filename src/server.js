@@ -4,7 +4,9 @@ import session from 'express-session';
 import cors from 'cors';
 import MongoStore from 'connect-mongo';
 import rootRouter from './routers/rootRouter.js';
+import chatRoomRouter from './routers/chatRoomRouter.js';
 import userRouter from './routers/userRouter.js';
+
 
 const app = express();
 app.use(
@@ -25,5 +27,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 app.use('/', rootRouter);
+app.use('/chatroom', chatRoomRouter);
 app.use('/user', userRouter);
 export default app;
