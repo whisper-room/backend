@@ -8,10 +8,14 @@ export const createRoom = async (req, res) => {
     return res.status(400).json({ message: "❌ 요청 본문이 비어 있습니다!" });
   }
 
-  const { roomname, usernames } = req.body;
+  const { roomname, usernames,roomimg } = req.body;
 
   if (!roomname) {
     return res.status(400).json({ message: "❌ 채팅방 이름이 필요합니다." });
+  }
+
+  if (!usernames) {
+    return res.status(400).json({ message: "❌ 최소 한 명의 유저를 초대해야합니다."})
   }
 
   try {
@@ -19,7 +23,11 @@ export const createRoom = async (req, res) => {
     const users = await User.find({username: {$in : usernames }});
     const userIds = users.map(user => user._id);
 
-    const Newroom = new Chatroom({ roomname, members : userIds });
+    const Newroom = new Chatroom({
+      roomname,
+      members : userIds,
+      roomimg : roomimg || null
+    });
     await Newroom.save(); 
 
     return res.status(201).json({ message: '채팅방 생성 완료', room : Newroom });
