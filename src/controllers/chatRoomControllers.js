@@ -8,7 +8,9 @@ export const createRoom = async (req, res) => {
     return res.status(400).json({ message: '❌ 요청 본문이 비어 있습니다!' });
   }
 
-  const { roomname, usernames, roomimg } = req.body;
+  const { roomname } = req.body;
+  const usernames = JSON.parse(req.body.usernames);
+  const roomimg = req.file ? req.file.path : '';
 
   if (!roomname) {
     return res.status(400).json({ message: '❌ 채팅방 이름이 필요합니다.' });
