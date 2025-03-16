@@ -57,3 +57,22 @@ export const deleteRoom = async (req, res) => {
     return res.status(500).json({ message: '❌ 채팅방 삭제 실패', error: error.message });
   }
 };
+
+export const searchRoom = async (req, res) => {
+  const { query } = req.query; 
+  if (!query) {
+    return res.status(400).json({ message: "❌ 검색어를 입력하세요." });
+  }
+
+  try {
+    const chatrooms = await Chatroom.find({ 
+      roomname: { $regex: query, $options: "i" } 
+    }).populate("members", "username profile");
+
+    return res.status(200).json({ chatrooms });
+  } catch (error) {
+    console.error("🚨 채팅방 검색 에러:", error);
+    return res.status(500).json({ message: "❌ 채팅방 검색 실패" });
+  }
+};
+
