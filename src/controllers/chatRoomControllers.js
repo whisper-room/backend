@@ -3,12 +3,18 @@ import User from "../models/User.js";
 
 export const createRoom = async (req, res) => {
   console.log("📌 req.body:", req.body); 
+  console.log("📌 req.file:", req.file);
 
   if (!req.body || Object.keys(req.body).length === 0) {
     return res.status(400).json({ message: "❌ 요청 본문이 비어 있습니다!" });
   }
 
-  const { roomname, usernames,roomimg } = req.body;
+  const { roomname, usernames } = req.body;
+  const roomimg = req.file ? `/uploads/${req.file.filename}` : null;
+
+  //usernames : 사용자가 입력한 유저 이름 목록
+  //userIds : usernames로 찾은 유저들의 id 목록
+  //members : Chatroom 모델에 저장되는 실제 멤버 id 목록
 
   if (!roomname) {
     return res.status(400).json({ message: "❌ 채팅방 이름이 필요합니다." });
@@ -26,7 +32,7 @@ export const createRoom = async (req, res) => {
     const Newroom = new Chatroom({
       roomname,
       members : userIds,
-      roomimg : roomimg || null
+      roomimg,
     });
     await Newroom.save(); 
 
@@ -49,7 +55,7 @@ export const deleteRoom = async (req,res) => {
 
     await Chatroom.findByIdAndDelete(roomId);
 
-    return res.status(200).json({message: "✅ 채팅방 삭제 완료!", room : newRoom });
+    return res.status(200).json({message: "✅ 채팅방 삭제 완료!"});
   } catch (error) {
     console.error("🚨 채팅방 삭제 에러:", error);
     return res.status(500).json({ message: "❌ 채팅방 삭제 실패", error: error.message });
