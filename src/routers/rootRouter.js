@@ -1,10 +1,10 @@
 import express from 'express';
 import { join, login, logout, session } from '../controllers/userControllers';
-import { uploadFiles } from '../middlewares';
+import { profileUpload } from '../middlewares';
 
 const rootRouter = express.Router();
 
-rootRouter.post('/join', uploadFiles.single('profile'), join);
+rootRouter.post('/join', profileUpload.single('profile'), join);
 rootRouter.post('/login', login);
 rootRouter.get('/session', session);
 rootRouter.post('/logout', logout);

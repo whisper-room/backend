@@ -11,7 +11,6 @@ import userRouter from './routers/userRouter.js';
 import chatRouter from "./routers/chatRouter.js";
 import socketHandlers from "./controllers/socketControllers.js";
 
-
 const app = express();
 
 const server = http.createServer(app);
