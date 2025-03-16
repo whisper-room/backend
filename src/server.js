@@ -7,7 +7,6 @@ import rootRouter from './routers/rootRouter.js';
 import chatRoomRouter from './routers/chatRoomRouter.js';
 import userRouter from './routers/userRouter.js';
 
-
 const app = express();
 app.use(
   cors({
