@@ -7,6 +7,7 @@ import rootRouter from './routers/rootRouter.js';
 import chatRoomRouter from './routers/chatRoomRouter.js';
 import userRouter from './routers/userRouter.js';
 import apiRouter from './routers/apiRouter.js';
+import chatRouter from './routers/chatRouter.js';
 
 const app = express();
 app.use(
@@ -30,4 +31,5 @@ app.use('/', rootRouter);
 app.use('/chatroom', chatRoomRouter);
 app.use('/user', userRouter);
 app.use('/api', apiRouter);
+app.use('/chat', chatRouter);
 export default app;
