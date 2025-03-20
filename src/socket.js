@@ -10,13 +10,19 @@ export default function socketHandlers(io) {
     });
 
     socket.on('sendMessage', async ({ roomId, sender, text }) => {
-      console.log(`📩 메시지 도착 [방: ${roomId}], text`);
+      console.log(`📩 메시지 도착 [방: ${roomId}]`, text);
 
       try {
         const newMessage = new Chat({ roomId, sender, text });
         await newMessage.save();
 
-        io.to(roomId).emit('receiveMessage', { sender, text });
+        // sender 정보 populate
+        const populatedMessage = await newMessage.populate('sender', 'username profile');
+
+        io.to(roomId).emit('receiveMessage', {
+          sender: populatedMessage.sender,
+          text: populatedMessage.text,
+        });
       } catch (error) {
         console.error('🚨 메시지 저장 실패:', error);
       }
