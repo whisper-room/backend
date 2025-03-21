@@ -3,13 +3,14 @@ import Chat from '../models/Chat.js';
 //전송
 export const sendMessage = async (req, res) => {
   const { roomId, sender, text } = req.body;
+  const img_url = req.file ? req.file.path : '';
 
-  if (!roomId || !sender || !text) {
-    return res.status(400).json({ message: '❌ 모든 필드를 입력하세요.' });
+  if (!roomId || !sender || (!text && !img_url)) {
+    return res.status(400).json({ message: '❌ 메시지를 입력하세요.' });
   }
 
   try {
-    const newMessage = new Chat({ roomId, sender, text });
+    const newMessage = new Chat({ roomId, sender, text,img_url });
     await newMessage.save();
 
     return res.status(201).json({ message: '✅ 메시지 전송 완료', newMessage });
