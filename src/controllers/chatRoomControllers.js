@@ -1,4 +1,5 @@
 import Chatroom from '../models/Chatroom.js';
+import Chat from '../models/Chat.js';
 import User from '../models/User.js';
 
 export const createRoom = async (req, res) => {
@@ -20,7 +21,10 @@ export const createRoom = async (req, res) => {
   }
 
   try {
-    const users = await User.find({ username: { $in: usernames } });
+    const parsedUsernames = JSON.parse(usernames);
+    console.log('✅ 변환된 usernames:', parsedUsernames);
+
+    const users = await User.find({ username: { $in: parsedUsernames } });
     const userIds = users.map((user) => user._id);
 
     const Newroom = new Chatroom({
@@ -46,9 +50,10 @@ export const deleteRoom = async (req, res) => {
       return res.status(404).json({ message: '❌ 채팅방을 찾을 수 없습니다.' });
     }
 
+    await Chat.deleteMany({ roomId });
     await Chatroom.findByIdAndDelete(roomId);
 
-    return res.status(200).json({ message: '✅ 채팅방 삭제 완료!'});
+    return res.status(200).json({ message: '✅ 채팅방 삭제 완료!' });
   } catch (error) {
     console.error('🚨 채팅방 삭제 에러:', error);
     return res.status(500).json({ message: '❌ 채팅방 삭제 실패', error: error.message });
@@ -56,30 +61,28 @@ export const deleteRoom = async (req, res) => {
 };
 
 export const leaveRoom = async (req, res) => {
-    const { roomId } = req.params;
-    const { userId } = req.body;
+  const { roomId } = req.params;
+  const { userId } = req.body;
 
-    if (!userId) {
-      return res.status(400).json({ message: "❌ 유저 ID가 필요합니다."});
-    } 
-    try {
-      const chatroom = await Chatroom.findById(roomId);
-      if (!chatroom ) {
-        return res.status(400).json({ message: "❌ 채팅방을 찾을 수 없습니다."});
-      }
-
-    if (!chatroom.members.includes(userId)) {
-        return res.status(400).json({ message: "❌ 해당 유저는 채팅방에 없습니다." });
-      }
-
-    chatroom.members = chatroom.members.filter(member => member.toString() !== userId);
-    await chatroom.save();
-
-    return res.status(200).json({ message: "✅ 채팅방 나가기 완료!", chatroom });
-    } catch (error) {
-      console.error("🚨 채팅방 나가기 에러:", error);
-      return res.status(500).json({ message: "❌ 채팅방 나가기 실패" });
+  if (!userId) {
+    return res.status(400).json({ message: '❌ 유저 ID가 필요합니다.' });
+  }
+  try {
+    const chatroom = await Chatroom.findById(roomId);
+    if (!chatroom) {
+      return res.status(400).json({ message: '❌ 채팅방을 찾을 수 없습니다.' });
     }
 
-  
+    if (!chatroom.members.includes(userId)) {
+      return res.status(400).json({ message: '❌ 해당 유저는 채팅방에 없습니다.' });
+    }
+
+    chatroom.members = chatroom.members.filter((member) => member.toString() !== userId);
+    await chatroom.save();
+
+    return res.status(200).json({ message: '✅ 채팅방 나가기 완료!', chatroom });
+  } catch (error) {
+    console.error('🚨 채팅방 나가기 에러:', error);
+    return res.status(500).json({ message: '❌ 채팅방 나가기 실패' });
+  }
 };
