@@ -86,3 +86,39 @@ export const leaveRoom = async (req, res) => {
     return res.status(500).json({ message: '❌ 채팅방 나가기 실패' });
   }
 };
+
+export const addUser = async (req,res) => {
+  const { username} = req.body;
+  const { roomId } = req.params;
+
+  if (!username) {
+    return res.status(400).json({ message: "❌ 초대할 유저 닉네임이 필요합니다." });
+  }
+
+  try {
+    const chatroom = await Chatroom.findById(roomId);
+    if (!chatroom) {
+      return res.status(404).json({ message: "❌ 채팅방을 찾을 수 없습니다." });
+    }
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: "❌ 해당 닉네임의 유저가 존재하지 않습니다." });
+    }
+
+    if (chatroom.members.includes(user._id)) {
+      return res.status(400).json({ message: "⚠️ 이미 채팅방에 있는 유저입니다." });
+    }
+
+    chatroom.members.push(user._id);
+    await chatroom.save();
+
+    return res.status(200).json({
+      message: "✅ 유저 초대 완료!",
+      chatroom,
+    });
+  } catch (error) {
+    console.error("🚨 유저 초대 에러:", error);
+    return res.status(500).json({ message: "❌ 유저 초대 실패" });
+  }
+};
