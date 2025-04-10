@@ -10,7 +10,7 @@ export const sendMessage = async (req, res) => {
   }
 
   try {
-    const newMessage = new Chat({ roomId, sender, text,img_url });
+    const newMessage = new Chat({ roomId, sender, text,img_url, readBy: [sender] });
     await newMessage.save();
 
     return res.status(201).json({ message: '✅ 메시지 전송 완료', newMessage });
@@ -24,7 +24,15 @@ export const getMessages = async (req, res) => {
   const { roomId } = req.params;
 
   try {
+    const chatRoom = await Chatroom.findById(roomId);
+    const totalMembers = chatRoom ? chatRoom.members.length : 0;
+
     const messages = await Chat.find({ roomId }).populate('sender', 'username profile');
+    const messagesWithUnread = messages.map(message => {
+      const unreadCount = totalMembers - message.readBy.length;
+      return { ...message.toObject(), unreadCount };
+    });
+    
     return res.status(200).json({ messages });
   } catch (error) {
     console.error('🚨 메시지 불러오기 오류:', error);
