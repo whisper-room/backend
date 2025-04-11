@@ -44,25 +44,30 @@ export const patchEdit = async (req, res) => {
   try {
     const { roomId } = req.params;
     const roomname = req.body.roomname;
-    const roomimg = req.file ? req.file.path : '';
+
+    const existingRoom = await Chatroom.findById(roomId);
+    if (!existingRoom) {
+      return res.status(404).json({ message: '채팅방을 찾을 수 없습니다.' });
+    }
+
+    const roomimg = req.file ? req.file.path : existingRoom.roomimg; // 이미지가 없으면 기존 이미지 유지
 
     const updateRoom = await Chatroom.findByIdAndUpdate(
       roomId,
       {
         roomname,
-        roomimg: roomimg || null,
+        roomimg,
       },
       { new: true }
     );
-    if (!updateRoom) {
-      return res.status(404).json({ message: '채팅방을 찾을 수 없습니다.' });
-    }
+
     return res.status(200).json({ message: '채팅방 정보가 수정되었습니다.', updateRoom });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'error' });
   }
 };
+
 export const deleteRoom = async (req, res) => {
   try {
     const { roomId } = req.params;
