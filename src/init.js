@@ -18,6 +18,8 @@ const io = new Server(server, {
   },
 });
 
+app.set('io', io);
+
 // 3. 소켓 이벤트 등록
 socketHandlers(io);
 
