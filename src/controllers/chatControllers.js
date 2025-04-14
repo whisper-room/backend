@@ -41,7 +41,7 @@ export const getMessages = async (req, res) => {
       return { ...message.toObject(), unreadCount };
     });
 
-    return res.status(200).json({ messages });
+    return res.status(200).json({ messages: messagesWithUnread });
   } catch (error) {
     console.error('🚨 메시지 불러오기 오류:', error);
     return res.status(500).json({ message: '❌ 메시지 불러오기 실패' });

@@ -31,11 +31,26 @@ export default function socketHandlers(io) {
     // 클라이언트에서 읽음 처리를 요청하는 이벤트 추가
     socket.on('markAsRead', async ({ roomId, userId }) => {
       try {
-        // 해당 방의 모든 메시지에서 아직 userId가 추가되지 않은 메시지에 대해 추가
+        // 메시지 읽음 처리
         await Chat.updateMany({ roomId, readBy: { $ne: userId } }, { $addToSet: { readBy: userId } });
-        console.log(`User ${userId} marked messages as read in room ${roomId}`);
-        // (선택 사항) 업데이트된 메시지를 방 전체에 전달하여 클라이언트들이 읽음 상태를 새로 고칠 수 있도록 함.
-        const updatedMessages = await Chat.find({ roomId }).populate('sender', 'username profile');
+
+        // 방 내 모든 메시지 가져오기
+        const messages = await Chat.find({ roomId }).populate('sender', 'username profile');
+
+        // 방에 있는 사용자 수 계산
+        const clients = await io.in(roomId).fetchSockets();
+        const totalUsers = clients.length;
+
+        // 각 메시지마다 unreadCount 재계산
+        const updatedMessages = messages.map((msg) => {
+          const unreadCount = Math.max(totalUsers - msg.readBy.length, 0);
+          return {
+            ...msg.toObject(),
+            unreadCount,
+          };
+        });
+
+        // 클라이언트에 업데이트된 메시지들 전송
         io.to(roomId).emit('updateMessages', updatedMessages);
       } catch (error) {
         console.error('Error marking messages as read:', error);
