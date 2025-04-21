@@ -21,6 +21,9 @@ export const createRoom = async (req, res) => {
   }
 
   try {
+
+    const userId = req.session.user._id;
+
     const parsedUsernames = JSON.parse(usernames);
     console.log('✅ 변환된 usernames:', parsedUsernames);
 
@@ -31,6 +34,7 @@ export const createRoom = async (req, res) => {
       roomname,
       members: userIds,
       roomimg: roomimg || null,
+      createdBy: userId,
     });
     await Newroom.save();
 
@@ -71,10 +75,15 @@ export const patchEdit = async (req, res) => {
 export const deleteRoom = async (req, res) => {
   try {
     const { roomId } = req.params;
+    const userId = req.session.user._id;
 
     const room = await Chatroom.findById(roomId);
     if (!room) {
       return res.status(404).json({ message: '❌ 채팅방을 찾을 수 없습니다.' });
+    }
+
+    if (room.createdBy.toString() !== userId.toString()) {
+      return res.status(403).json({ message: '❌ 삭제 권한이 없습니다.' });
     }
 
     await Chat.deleteMany({ roomId });
