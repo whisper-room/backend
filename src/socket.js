@@ -1,4 +1,5 @@
 import Chat from './models/Chat';
+import Chatroom from './models/Chatroom.js';
 
 export default function socketHandlers(io) {
   io.on('connection', (socket) => {
@@ -10,18 +11,20 @@ export default function socketHandlers(io) {
     });
 
     socket.on('sendMessage', async ({ roomId, sender, text }) => {
-      console.log(`📩 메시지 도착 [방: ${roomId}]`, text);
-
       try {
         const newMessage = new Chat({ roomId, sender, text, readBy: [sender] });
         await newMessage.save();
 
-        // sender 정보 populate
         const populatedMessage = await newMessage.populate('sender', 'username profile');
 
+        // 🟡 채팅방 멤버 수 계산
+        const chatRoom = await Chatroom.findById(roomId);
+        const totalMembers = chatRoom ? chatRoom.members.length : 0;
+        const unreadCount = totalMembers - 1; // 보낸 사람은 이미 읽음
+
         io.to(roomId).emit('receiveMessage', {
-          sender: populatedMessage.sender,
-          text: populatedMessage.text,
+          ...populatedMessage.toObject(),
+          unreadCount,
         });
       } catch (error) {
         console.error('🚨 메시지 저장 실패:', error);
@@ -31,27 +34,24 @@ export default function socketHandlers(io) {
     // 클라이언트에서 읽음 처리를 요청하는 이벤트 추가
     socket.on('markAsRead', async ({ roomId, userId }) => {
       try {
-        // 메시지 읽음 처리
         await Chat.updateMany({ roomId, readBy: { $ne: userId } }, { $addToSet: { readBy: userId } });
+        console.log(`User ${userId} marked messages as read in room ${roomId}`);
 
-        // 방 내 모든 메시지 가져오기
-        const messages = await Chat.find({ roomId }).populate('sender', 'username profile');
+        const chatRoom = await Chatroom.findById(roomId);
+        const totalMembers = chatRoom ? chatRoom.members.length : 0;
 
-        // 방에 있는 사용자 수 계산
-        const clients = await io.in(roomId).fetchSockets();
-        const totalUsers = clients.length;
+        const updatedMessages = await Chat.find({ roomId }).populate('sender', 'username profile');
 
-        // 각 메시지마다 unreadCount 재계산
-        const updatedMessages = messages.map((msg) => {
-          const unreadCount = Math.max(totalUsers - msg.readBy.length, 0);
+        // unreadCount 계산해서 메시지마다 넣어주기
+        const messagesWithUnread = updatedMessages.map((msg) => {
+          const unreadCount = totalMembers - (msg.readBy?.length || 0);
           return {
             ...msg.toObject(),
             unreadCount,
           };
         });
 
-        // 클라이언트에 업데이트된 메시지들 전송
-        io.to(roomId).emit('updateMessages', updatedMessages);
+        io.to(roomId).emit('updateMessages', messagesWithUnread);
       } catch (error) {
         console.error('Error marking messages as read:', error);
       }

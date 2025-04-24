@@ -18,8 +18,17 @@ export const sendMessage = async (req, res) => {
 
     const populatedMessage = await newMessage.populate('sender', 'username profile');
 
-    // 같은 채팅방(roomId)에 있는 모든 사용자에게 메시지를 뿌림
-    req.app.get('io').to(roomId).emit('receiveMessage', populatedMessage);
+    const chatRoom = await Chatroom.findById(roomId);
+    const totalMembers = chatRoom ? chatRoom.members.length : 0;
+    const unreadCount = totalMembers - 1;
+
+    req.app
+      .get('io')
+      .to(roomId)
+      .emit('receiveMessage', {
+        ...populatedMessage.toObject(),
+        unreadCount,
+      });
 
     return res.status(201).json({ message: '✅ 메시지 전송 완료', newMessage });
   } catch (error) {
